@@ -17,8 +17,8 @@ router.get("/:id", getProductById);
 
 // ADMIN (for now no restriction)
 
-router.post("/", upload.single("image"), addProduct);
-router.put("/:id", upload.single("image"), updateProduct);
+router.post("/", upload.array("images",5), addProduct);
+router.put("/:id", upload.array("images",5), updateProduct);
 router.delete("/:id", deleteProduct);
 
 module.exports = router;

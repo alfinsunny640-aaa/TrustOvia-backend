@@ -1,8 +1,5 @@
 const Product = require("../models/Product");
- const cloudinary = require("../config/cloudinary");
-
-
-
+const cloudinary = require("../config/cloudinary");
 
 // GET all products (Public)
 const getProducts = async (req, res) => {
@@ -29,26 +26,32 @@ const getProductById = async (req, res) => {
     }
 };
 
-// ADD product (Admin – later)
+// ADD product (MULTIPLE IMAGES)
 const addProduct = async (req, res) => {
     try {
-
-        if (!req.file) {
-            return res.status(400).json({ message: "Image file is required" });
-        }
-
         const { name, price, description, category } = req.body;
 
-        const uploadResult = await cloudinary.uploader.upload(
-            `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
-        );
+        // ✅ Validate images
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "At least one image is required" });
+        }
+
+        // ✅ Upload all images to Cloudinary
+        const imageUrls = [];
+
+        for (const file of req.files) {
+            const uploadResult = await cloudinary.uploader.upload(
+                `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+            );
+            imageUrls.push(uploadResult.secure_url);
+        }
 
         const product = await Product.create({
             name,
             price,
             description,
             category,
-            image: uploadResult.secure_url,
+            images: imageUrls, // 🔥 array of images
         });
 
         res.status(201).json(product);
@@ -57,31 +60,43 @@ const addProduct = async (req, res) => {
     }
 };
 
-// UPDATE product (Admin – later)
+// UPDATE product (OPTIONAL IMAGE UPDATE)
 const updateProduct = async (req, res) => {
     try {
-        const { name, price, description, category, image } = req.body;
-
+        const { name, price, description, category } = req.body;
         const product = await Product.findById(req.params.id);
 
-        if (product) {
-            product.name = name || product.name;
-            product.price = price || product.price;
-            product.description = description || product.description;
-            product.category = category || product.category;
-            product.image = image || product.image;
-
-            const updatedProduct = await product.save();
-            res.json(updatedProduct);
-        } else {
-            res.status(404).json({ message: "Product not found" });
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
         }
+
+        // 🔥 Upload new images if provided
+        if (req.files && req.files.length > 0) {
+            const newImages = [];
+
+            for (const file of req.files) {
+                const uploadResult = await cloudinary.uploader.upload(
+                    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+                );
+                newImages.push(uploadResult.secure_url);
+            }
+
+            product.images = newImages; // replace old images
+        }
+
+        product.name = name || product.name;
+        product.price = price || product.price;
+        product.description = description || product.description;
+        product.category = category || product.category;
+
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// DELETE product (Admin – later)
+// DELETE product
 const deleteProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
