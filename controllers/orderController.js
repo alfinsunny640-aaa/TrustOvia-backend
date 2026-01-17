@@ -43,7 +43,11 @@ exports.placeOrder = async (req, res) => {
 
         const order = await Order.create({
             userId,
-            contact,
+
+            contact: {
+                phone: contact?.phone || "", // ✅ SAFE & EXPLICIT
+            },
+
             items: orderItems,
             shippingAddress,
             paymentMethod,
@@ -54,6 +58,7 @@ exports.placeOrder = async (req, res) => {
             paymentStatus: paymentMethod === "COD" ? "PENDING" : "PAID",
             orderStatus: "PLACED",
         });
+
 
         // ✅ Clear cart after order
         cart.items = [];

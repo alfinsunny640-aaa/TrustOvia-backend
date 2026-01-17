@@ -5,7 +5,7 @@ const User = require("../models/User");
 exports.getAddresses = async (req, res) => {
     try {
         const { userId } = req.params;
-       
+
 
         const userExists = await User.findById(userId);
         if (!userExists) {
@@ -127,3 +127,19 @@ exports.setDefaultAddress = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+// controllers/addressController.js
+exports.getDefaultAddress = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const address = await Address.findOne({
+            userId,
+            isDefault: true,
+        });
+
+        res.json(address); // can be null if none
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching default address" });
+    }
+};
+
