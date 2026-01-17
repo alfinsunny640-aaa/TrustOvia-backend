@@ -7,6 +7,18 @@ const cartItemSchema = new mongoose.Schema(
             ref: "Product",
             required: true,
         },
+        name: {
+            type: String,
+            required: true,
+        },
+        image: {
+            type: String,
+            default: "",
+        },
+        price: {
+            type: Number,
+            required: true,
+        },
         quantity: {
             type: Number,
             default: 1,
@@ -24,11 +36,17 @@ const cartSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        items: [cartItemSchema],
-        status: {
-            type: String,
-            enum: ["active", "converted"],
-            default: "active",
+        items: {
+            type: [cartItemSchema],
+            default: [],
+        },
+        subtotal: {
+            type: Number,
+            default: 0,
+        },
+        totalItems: {
+            type: Number,
+            default: 0,
         },
     },
     { timestamps: true }
