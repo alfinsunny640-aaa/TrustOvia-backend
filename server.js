@@ -1,7 +1,8 @@
+require("dotenv").config();
 const express = require("express");
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
+// dotenv.config();
 const cors = require("cors");
-dotenv.config();
 
 
 const connectDB = require("./config/db");
@@ -10,6 +11,7 @@ const productRoutes = require("./routes/productRoutes");
 const addressRoutes = require("./routes/addressRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 connectDB();
 
@@ -25,7 +27,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/cart", cartRoutes)
 app.use("/api/orders", orderRoutes);
-
+app.use("/api/payments", paymentRoutes);
 
 
 app.get("/", (req, res) => {

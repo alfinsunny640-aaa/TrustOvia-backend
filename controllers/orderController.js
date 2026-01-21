@@ -8,7 +8,6 @@ exports.placeOrder = async (req, res) => {
     try {
         const {
             userId,
-            contact,
             shippingAddress,
             paymentMethod,
         } = req.body;
@@ -44,12 +43,13 @@ exports.placeOrder = async (req, res) => {
         const order = await Order.create({
             userId,
 
-            contact: {
-                phone: contact?.phone || "", // ✅ SAFE & EXPLICIT
+            items: orderItems,
+
+            shippingAddress: {
+                ...shippingAddress,
+                phone: shippingAddress.phone || "", // ✅ PHONE SAVED HERE
             },
 
-            items: orderItems,
-            shippingAddress,
             paymentMethod,
             subtotal,
             deliveryFee,
@@ -58,6 +58,7 @@ exports.placeOrder = async (req, res) => {
             paymentStatus: paymentMethod === "COD" ? "PENDING" : "PAID",
             orderStatus: "PLACED",
         });
+
 
 
         // ✅ Clear cart after order

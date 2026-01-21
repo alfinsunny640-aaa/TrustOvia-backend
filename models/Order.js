@@ -34,6 +34,7 @@ const orderSchema = new mongoose.Schema(
             state: String,
             pincode: String,
             country: { type: String, default: "India" },
+            phone: String,
         },
 
         shippingMethod: {
@@ -48,7 +49,7 @@ const orderSchema = new mongoose.Schema(
 
         paymentMethod: {
             type: String,
-            enum: ["COD", "RAZORPAY"],
+            enum: ["COD", "ONLINE"],
             required: true,
         },
 
