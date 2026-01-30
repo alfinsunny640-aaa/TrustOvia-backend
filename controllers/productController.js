@@ -51,7 +51,8 @@ const addProduct = async (req, res) => {
             price,
             description,
             category,
-            images: imageUrls, // 🔥 array of images
+            images: imageUrls,
+            createdBy: req.user._id, // ✅ admin who created product
         });
 
         res.status(201).json(product);
@@ -64,6 +65,7 @@ const addProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const { name, price, description, category } = req.body;
+
         const product = await Product.findById(req.params.id);
 
         if (!product) {
@@ -81,17 +83,24 @@ const updateProduct = async (req, res) => {
                 newImages.push(uploadResult.secure_url);
             }
 
-            product.images = newImages; // replace old images
+            product.images = newImages;
         }
 
-        product.name = name || product.name;
-        product.price = price || product.price;
-        product.description = description || product.description;
-        product.category = category || product.category;
+        // ✅ Update only provided fields
+        if (name !== undefined) product.name = name;
+        if (price !== undefined) product.price = price;
+        if (description !== undefined) product.description = description;
+        if (category !== undefined) product.category = category;
+
+        // ✅ FIX: ensure createdBy exists (for old products)
+        if (!product.createdBy) {
+            product.createdBy = req.user._id;
+        }
 
         const updatedProduct = await product.save();
         res.json(updatedProduct);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: error.message });
     }
 };

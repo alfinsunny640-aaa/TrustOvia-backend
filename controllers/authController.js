@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // SIGNUP
 const signup = async (req, res) => {
@@ -49,10 +50,10 @@ const signup = async (req, res) => {
     }
 };
 
-// LOGIN (NO TOKEN)
+// LOGIN
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, isAdminLogin } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -70,12 +71,27 @@ const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
+        // 🔐 ADMIN CHECK
+        if (isAdminLogin && user.role !== "admin") {
+            return res.status(403).json({ message: "Admin access only" });
+        }
+
+        // ✅ CREATE JWT TOKEN (ADD THIS)
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // ✅ SEND TOKEN IN RESPONSE
         res.json({
             message: "Login successful",
+            token,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
             },
         });
     } catch (error) {
@@ -84,5 +100,5 @@ const login = async (req, res) => {
         });
     }
 };
-
 module.exports = { signup, login };
+
